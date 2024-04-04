@@ -1,4 +1,3 @@
-// const isAlive = require('../utils/redis');
 import RedisClient from '../utils/redis';
 import dbClient from '../utils/db';
 
