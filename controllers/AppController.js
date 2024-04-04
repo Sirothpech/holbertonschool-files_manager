@@ -22,7 +22,7 @@ const AppController = {
       console.error(error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
-  }
+  },
 };
 
 export default AppController;
