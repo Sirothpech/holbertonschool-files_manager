@@ -1,6 +1,5 @@
 import sha1 from 'sha1';
 import dbClient from '../utils/db';
-import redisClient from '../utils/redis';
 
 const UsersController = {
   async postNew(req, res) {
@@ -27,13 +26,13 @@ const UsersController = {
 
     try {
       const result = await dbClient.db.collection('users').insertOne(newUser);
-      const insertedId = result.insertedId;
+      const { insertedId } = result;
       return res.status(201).json({ id: insertedId, email });
     } catch (error) {
       console.error('Error creating user:', error);
       return res.status(500).json({ error: 'Server error' });
     }
-  }
-}
+  },
+};
 
 export default UsersController;
