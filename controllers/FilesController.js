@@ -36,7 +36,7 @@ const FilesController = {
       }
 
       if (!type || !['folder', 'file', 'image'].includes(type)) {
-        return res.status(400).json({ error: 'Missing or invalid type' });
+        return res.status(400).json({ error: 'Missing type' });
       }
 
       if (type !== 'folder' && !data) {
@@ -53,25 +53,38 @@ const FilesController = {
         }
       }
 
+      let result;
+      if (type !== 'folder') {
+        const fileData = Buffer.from(data, 'base64').toString('utf-8');
+        const fileId = uuidv4();
+        const localPath = path.join(folderPath, fileId);
+        fs.writeFileSync(localPath, fileData);
+        result = await dbClient.db.collection('files').insertOne({
+          userId,
+          name,
+          type,
+          isPublic: isPublic || false,
+          parentId: parentId || '0',
+          localPath,
+        });
+      } else {
+        result = await dbClient.db.collection('files').insertOne({
+          userId,
+          name,
+          type,
+          isPublic: isPublic || false,
+          parentId: parentId || '0',
+        });
+      }
+
       const file = {
+        id: result.insertedId,
         userId,
         name,
         type,
         isPublic: isPublic || false,
         parentId: parentId || '0',
       };
-
-      if (type !== 'folder') {
-        const fileData = Buffer.from(data, 'base64').toString('utf-8');
-        const fileId = uuidv4();
-        const localPath = path.join(folderPath, fileId);
-        fs.writeFileSync(localPath, fileData);
-        file.localPath = localPath;
-      }
-
-      const result = await dbClient.db.collection('files').insertOne(file);
-      file.id = result.insertedId;
-      delete file._id;
 
       return res.status(201).json(file);
     } catch (error) {
