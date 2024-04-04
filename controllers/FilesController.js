@@ -30,7 +30,6 @@ const FilesController = {
       const {
         name, type, parentId, isPublic, data,
       } = req.body;
-      // const userId = req.user.id;
 
       if (!name) {
         return res.status(400).json({ error: 'Missing name' });
@@ -58,8 +57,8 @@ const FilesController = {
         userId,
         name,
         type,
-        parentId: parentId || '0',
         isPublic: isPublic || false,
+        parentId: parentId || '0',
       };
 
       if (type !== 'folder') {
@@ -72,6 +71,7 @@ const FilesController = {
 
       const result = await dbClient.db.collection('files').insertOne(file);
       file.id = result.insertedId;
+      delete file._id;
 
       return res.status(201).json(file);
     } catch (error) {
