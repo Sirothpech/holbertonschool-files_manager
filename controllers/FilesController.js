@@ -27,8 +27,9 @@ const FilesController = {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
-
-      const { name, type, parentId, isPublic, data } = req.body;
+      const {
+        name, type, parentId, isPublic, data,
+      } = req.body;
       // const userId = req.user.id;
 
       if (!name) {
