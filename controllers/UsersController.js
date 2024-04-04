@@ -49,12 +49,17 @@ const UsersController = {
       }
 
       const userObjectId = ObjectId(userId);
-      const user = await dbClient.db.collection('users').findOne({ _id: userObjectId }, { projection: { _id: 1, email: 1 } });
+      const user = await dbClient.db.collection('users').findOne({ _id: userObjectId });
       if (!user) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      return res.status(200).json(user);
+      const formattedUser = {
+        id: user._id,
+        email: user.email,
+      };
+
+      return res.status(200).json(formattedUser);
     } catch (error) {
       console.error('Error fetching user details:', error);
       return res.status(500).json({ error: 'Internal Server Error' });
