@@ -7,4 +7,4 @@ router.get('/status', Appcontroller.getStatus);
 
 router.get('/stats', Appcontroller.getStats);
 
-module.exports = router;
+export default router;

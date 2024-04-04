@@ -25,4 +25,4 @@ const AppController = {
   }
 };
 
-module.exports = AppController;
+export default AppController;
