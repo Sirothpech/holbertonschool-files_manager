@@ -21,7 +21,9 @@ class FilesController {
     }
 
     // Verify setting
-    const { name, type, parentId, isPublic, data } = req.body;
+    const {
+      name, type, parentId, isPublic, data,
+    } = req.body;
     if (!name) {
       return res.status(400).send({ error: 'Missing name' });
     }
@@ -34,7 +36,7 @@ class FilesController {
 
     // Verify parent
     if (parentId) {
-      if (!await dbClient.db.collection('files').findOne({ _id: ObjectId(parentId) }))  {
+      if (!await dbClient.db.collection('files').findOne({ _id: ObjectId(parentId) })) {
         return res.status(400).send({ error: 'Parent not found' });
       }
       if (!await dbClient.db.collection('files').findOne({ _id: ObjectId(parentId), type: 'folder' })) {
@@ -52,7 +54,7 @@ class FilesController {
         parentId: 0,
       };
       const insertedFolder = await dbClient.db.collection('files').insertOne(document);
-      res.status(201).send({
+      return res.status(201).send({
         id: insertedFolder.insertedId,
         userId,
         name,
@@ -60,7 +62,8 @@ class FilesController {
         isPublic: !!isPublic,
         parentId: 0,
       });
-    } else {
+    }
+    {
       let folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
       const filename = uuidv4();
       const clearData = Buffer.from(data, 'base64').toString('utf-8');
@@ -73,7 +76,7 @@ class FilesController {
           if (err) throw err;
         });
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
       const document = {
         userId,
@@ -96,6 +99,6 @@ class FilesController {
       });
     }
   }
-};
+}
 
 export default FilesController;
