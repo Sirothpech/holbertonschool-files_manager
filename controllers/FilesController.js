@@ -160,7 +160,7 @@ class FilesController {
     if (parentId === 0) {
       match = {};
     } else {
-      match = { parentId: parentId === '0' ? Number(parentId) : ObjectId(parentId), };
+      match = { parentId: parentId === '0' ? Number(parentId) : ObjectId(parentId) };
     }
     const limit = 20;
     const skip = page * limit;
@@ -183,6 +183,6 @@ class FilesController {
     }));
     return res.status(200).send(filesList);
   }
-};
+}
 
 export default FilesController;
