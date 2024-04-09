@@ -209,6 +209,9 @@ class FilesController {
     if (!file) {
       return res.status(404).send({ error: 'Not found' });
     }
+    if (user._id.toString() !== file.userId.toString()) {
+      return res.status(404).json({ error: 'Not found' });
+    }
 
     // update file
     const updatedDocument = { $set: { isPublic: true } };
