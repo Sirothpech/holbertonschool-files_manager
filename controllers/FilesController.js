@@ -273,7 +273,7 @@ class FilesController {
     });
   }
 
-    static async getFile(req, res) {
+  static async getFile(req, res) {
     // check if the file exists
     const fileId = ObjectId(req.params.id);
     const filesCollection = dbClient.db.collection('files');
