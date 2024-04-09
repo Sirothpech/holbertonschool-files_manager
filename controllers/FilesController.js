@@ -293,18 +293,14 @@ class FilesController {
 
     if (file.type === 'folder') return res.status(400).json({ error: 'A folder doesn\'t have content' });
 
-    // Check if the file is locally present
-    const filePath = file.folderPath; // Assuming folderPath contains the local path of the file
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: 'File not found locally' });
+    try {
+      const fileContent = fs.readFileSync(file.folderPath);
+      const type = mime.lookup(file.name);
+      res.set('Content-Type', `${type}`);
+      return res.status(200).send(fileContent);
+    } catch (err) {
+      return res.status(404).json({ error: 'Not found' });
     }
-
-    // Retrieve the MIME type of the file based on its name
-    const mimeType = mime.lookup(file.name);
-
-    // Return the content of the file with the correct MIME type
-    res.setHeader('Content-Type', mimeType);
-    return fs.createReadStream(filePath).pipe(res);
   }
 }
 
