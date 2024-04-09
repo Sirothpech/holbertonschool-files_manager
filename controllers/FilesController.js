@@ -289,7 +289,7 @@ class FilesController {
     // Verify if the user is the owner of the file or if the file is public
     if (!file.isPublic && (!userId || userId !== file.userId.toString())) {
       return res.status(404).json({ error: 'Not found' });
-    }    
+    }
 
     // Ensure that the file is not a folder (as folders don't have content)
     if (file.type === 'folder') {
@@ -307,7 +307,7 @@ class FilesController {
 
     // Return the content of the file with the correct MIME type
     res.setHeader('Content-Type', mimeType);
-    fs.createReadStream(filePath).pipe(res);
+    return fs.createReadStream(filePath).pipe(res);
   }
 }
 
