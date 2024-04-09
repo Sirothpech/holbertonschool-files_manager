@@ -273,28 +273,25 @@ class FilesController {
     });
   }
 
-  static async getFile(req, res) {
-    const fileId = req.params.id;
-
-    // Check if the file document linked to the provided ID exists
-    const file = await dbClient.db.collection('files').findOne({ _id: ObjectId(fileId) });
+    static async getFile(req, res) {
+    // check if the file exists
+    const fileId = ObjectId(req.params.id);
+    const filesCollection = dbClient.db.collection('files');
+    const file = await filesCollection.findOne({ _id: fileId });
     if (!file) {
-      return res.status(404).json({ error: 'File not found' });
+      return res.status(404).json({ error: 'Not found1' });
     }
 
-    // Verify if the user is authenticated
-    const xToken = req.headers['x-token'];
-    const userId = await redisClient.get(`auth_${xToken}`);
-
-    // Verify if the user is the owner of the file or if the file is public
-    if (!file.isPublic && (!userId || userId !== file.userId.toString())) {
-      return res.status(404).json({ error: 'Not found' });
+    // if the document is private, check if the user is the owner and authenticated
+    if (!file.isPublic) {
+      const token = req.headers['x-token'];
+      if (!token) return res.status(404).json({ error: 'Not found2' });
+      const userId = await redisClient.get(`auth_${token}`);
+      if (!userId) return res.status(404).json({ error: 'Not found3' });
+      if (userId !== file.userId.toString()) return res.status(404).json({ error: 'Not found4' });
     }
 
-    // Ensure that the file is not a folder (as folders don't have content)
-    if (file.type === 'folder') {
-      return res.status(400).json({ error: "A folder doesn't have content" });
-    }
+    if (file.type === 'folder') return res.status(400).json({ error: 'A folder doesn\'t have content' });
 
     // Check if the file is locally present
     const filePath = file.folderPath; // Assuming folderPath contains the local path of the file
