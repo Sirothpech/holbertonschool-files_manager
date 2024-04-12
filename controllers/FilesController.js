@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import mime from 'mime-types';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
+import fileQueue from '../worker';
 
 class FilesController {
   static async postUpload(req, res) {
@@ -67,7 +68,7 @@ class FilesController {
     {
       let folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
       const filename = uuidv4();
-      const clearData = Buffer.from(data, 'base64').toString('utf-8');
+      const clearData = Buffer.from(data, 'base64');
       try {
         if (!fs.existsSync(folderPath)) {
           fs.mkdirSync(folderPath);
@@ -89,6 +90,11 @@ class FilesController {
       };
 
       const insertedFile = await dbClient.db.collection('files').insertOne(document);
+
+      if (type === 'image') {
+        // Add a job to the fileQueue with userId and fileId
+        fileQueue.add({ userId, fileId: insertedFile.insertedId });
+      }
 
       return res.status(201).send({
         id: insertedFile.insertedId,
@@ -301,13 +307,34 @@ class FilesController {
       return res.status(400).json({ error: 'A folder doesn\'t have content' });
     }
 
+    // Check if the specified size is valid
+    const validSizes = ['500', '250', '100'];
+    const requestedSize = req.query.size;
+    if (requestedSize) {
+      if (!validSizes.includes(requestedSize)) {
+        return res.status(400).json({ error: 'Invalid size parameter' });
+      }
+    }
+
+
     try {
-      const fileContent = fs.readFileSync(file.folderPath);
-      const type = mime.lookup(file.name);
-      res.set('Content-Type', `${type}`);
-      return res.status(200).send(fileContent);
+
+      // Construct the file path based on the requested size
+      const filePath = requestedSize? `${file.folderPath}_${requestedSize}` : file.folderPath ;
+      
+      // Check if the file exists
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: 'Not found1' });
+      }
+
+      // Retrieve the MIME type of the file based on its name
+      const mimeType = mime.lookup(file.name);
+
+      // Return the content of the file with the correct MIME type
+      res.setHeader('Content-Type', mimeType);
+      return res.status(200).send(fs.readFileSync(filePath))
     } catch (err) {
-      return res.status(404).json({ error: 'Not found' });
+      return res.status(404).json({ error: 'Not found2' });
     }
   }
 }
